@@ -1,0 +1,23 @@
+# Ignore environment files
+.env
+.venv
+
+# Ignore database files
+*.db
+
+# Ignore specific folder: computer_vision/database
+computer_vision/database/
+
+# Ignore other common files
+__pycache__/
+*.py[cod]
+*.so
+*.log
+*.sqlite3
+*.DS_Store
+.idea/
+.vscode/
+node_modules/
+dist/
+build/
+*.egg-info/

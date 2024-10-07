@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+pillow
+ultralytics
+numpy
+deepface
+python-multipart
+tf-keras
