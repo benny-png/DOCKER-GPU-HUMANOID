@@ -1,28 +1,20 @@
-# Use NVIDIA CUDA base image
-FROM nvidia/cuda:11.8.0-base-ubuntu22.04
+FROM nvidia/cuda:latest
 
-# Set environment variables
-ENV PYTHONUNBUFFERED=1
+LABEL authors="humanoid robot"
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    python3-pip \
-    python3-dev \
-    && rm -rf /var/lib/apt/lists/*
+FROM python:3.10-slim
 
 WORKDIR /app
 
-# Copy requirements file
-COPY requirements.txt .
+COPY . /app
 
-# Install Python dependencies
-RUN pip3 install --no-cache-dir -r requirements.txt
+COPY requirements.txt ./
 
-# Copy application code
-COPY . .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose port
 EXPOSE 80
 
-# Set the command to run the application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD [ "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80" ]
+
+# ENTRYPOINT is commented out as it conflicts with CMD
+# ENTRYPOINT [ "top", "-b" ]
