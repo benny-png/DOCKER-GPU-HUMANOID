@@ -22,3 +22,4 @@ dist/
 build/
 *.egg-info/
 *.pt
+api_log.txt
