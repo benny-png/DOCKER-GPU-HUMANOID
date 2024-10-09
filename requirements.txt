@@ -8,3 +8,4 @@ python-multipart
 tf-keras
 torch
 torchvision
+click
