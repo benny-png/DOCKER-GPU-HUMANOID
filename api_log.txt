@@ -23072,3 +23072,20 @@
 2024-10-10 09:03:33 - GPU is not available. Loading model to CPU.
 2024-10-10 09:06:51 - From D:\DOCKER GPU HUMANOID\.venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
 
+2024-10-10 09:06:59 - GPU is not available. Loading model to CPU.
+2024-10-10 09:07:00 - API Response: [
+  {
+    "name": "person",
+    "class": 0,
+    "confidence": 0.8590923547744751,
+    "box": {
+      "x1": 111.05657958984375,
+      "y1": 116.72088623046875,
+      "x2": 814.9605102539062,
+      "y2": 686.3658447265625
+    },
+    "track_id": 1
+  }
+]
+2024-10-10 09:08:19 - WebSocket connection accepted. Model: yolov10n.pt
+2024-10-10 09:08:19 - GPU is not available. Loading model to CPU.
