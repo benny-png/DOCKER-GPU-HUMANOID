@@ -9,3 +9,6 @@ tf-keras
 torch
 torchvision
 click
+websockets
+opencv-python
+aiohttp

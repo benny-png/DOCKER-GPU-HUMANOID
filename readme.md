@@ -30,85 +30,109 @@ print(results)
 
 **Response Format**:
 
-The API returns a list of detections, where each detection is a dictionary containing the following information:
+The API returns a list of detections, where each detection is a dictionary containing information about the detected object, including class name, confidence, bounding box coordinates, and track ID.
 
-```json
-[
-  {
-    "name": "person",
-    "class": 0,
-    "confidence": 0.96824,
-    "box": {
-      "x1": 0.64642,
-      "y1": 71.78952,
-      "x2": 334.61133,
-      "y2": 478.8522
-    },
-    "track_id": 1
-  },
-  ...
-]
-```
+### 2. Face Recognition
 
-- `name`: The class name of the detected object
-- `class`: The class ID of the detected object
-- `confidence`: The confidence score of the detection
-- `box`: The bounding box coordinates of the detection (x1, y1, x2, y2)
-- `track_id`: A unique identifier for tracking the object across frames
+#### 2.1 Find Faces
 
-**Working with the Results**:
+**Endpoint**: `/find_faces`
 
-You can process the results directly from the JSON response. Here's an example of how to work with the detections:
+**Method**: POST
 
-```python
-import json
+**Parameters**:
+- `file`: The image file to analyze (form-data)
+- `db_path`: Path to the database of face images (query)
+- `model_name`: Name of the face recognition model to use (query, default: "VGG-Face")
+- `detector_backend`: Name of the face detector backend to use (query, default: "retinaface")
 
-# Assuming 'response' is the API response
-detections = json.loads(response.text)
+#### 2.2 Add Face
 
-for detection in detections:
-    print(f"Detected {detection['name']} with confidence {detection['confidence']:.2f}")
-    print(f"Bounding box: {detection['box']}")
-    print(f"Track ID: {detection['track_id']}")
-    print("---")
-```
+**Endpoint**: `/add_face`
 
-**Visualizing Results**:
+**Method**: POST
 
-To visualize the results, you can use a library like OpenCV to draw bounding boxes and labels on the image. Here's a simple example:
+**Parameters**:
+- `file`: Face image to add (form-data)
+- `person_name`: Name of the person (form)
+- `db_path`: Path to the database of face images (query)
 
-```python
-import cv2
-import numpy as np
+#### 2.3 List People
 
-def draw_boxes(image_path, detections):
-    image = cv2.imread(image_path)
-    for detection in detections:
-        box = detection['box']
-        x1, y1 = int(box['x1']), int(box['y1'])
-        x2, y2 = int(box['x2']), int(box['y2'])
-        label = f"{detection['name']} {detection['confidence']:.2f}"
-        
-        color = (0, 255, 0)  # Green color for the bounding box
-        cv2.rectangle(image, (x1, y1), (x2, y2), color, 2)
-        cv2.putText(image, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
-    
-    cv2.imshow("Detections", image)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+**Endpoint**: `/list_people`
 
-# Use the function
-image_path = "/path/to/your/image.jpg"
-detections = detect_objects(image_path)
-draw_boxes(image_path, detections)
-```
+**Method**: GET
 
-This will display the image with bounding boxes and labels for each detected object.
+**Parameters**:
+- `db_path`: Path to the database of face images (query)
 
-**Notes**:
-- The `yolov10n.pt` model is used by default. You can specify different YOLO models by changing the `model_name` parameter.
-- The API handles tracking of objects across frames, providing a `track_id` for each detection.
-- The bounding box coordinates are returned in the format (x1, y1, x2, y2), where (x1, y1) is the top-left corner and (x2, y2) is the bottom-right corner of the box.
-- Confidence scores range from 0 to 1, with higher values indicating greater confidence in the detection.
+#### 2.4 Get Person Images
 
-For any issues or feature requests related to object detection, please contact us the project maintainers.
+**Endpoint**: `/person/{person_name}`
+
+**Method**: GET
+
+**Parameters**:
+- `person_name`: Name of the person (path)
+- `db_path`: Path to the database of face images (query)
+
+#### 2.5 Get Image
+
+**Endpoint**: `/image/{person_name}/{image_name}`
+
+**Method**: GET
+
+**Parameters**:
+- `person_name`: Name of the person (path)
+- `image_name`: Name of the image file (path)
+- `db_path`: Path to the database of face images (query)
+
+#### 2.6 Update Person Name
+
+**Endpoint**: `/update_person/{old_name}`
+
+**Method**: PUT
+
+**Parameters**:
+- `old_name`: Current name of the person (path)
+- `new_name`: New name for the person (form)
+- `db_path`: Path to the database of face images (query)
+
+#### 2.7 Delete Person
+
+**Endpoint**: `/delete_person/{person_name}`
+
+**Method**: DELETE
+
+**Parameters**:
+- `person_name`: Name of the person to delete (path)
+- `db_path`: Path to the database of face images (query)
+
+#### 2.8 Delete Image
+
+**Endpoint**: `/delete_image/{person_name}/{image_name}`
+
+**Method**: DELETE
+
+**Parameters**:
+- `person_name`: Name of the person (path)
+- `image_name`: Name of the image to delete (path)
+- `db_path`: Path to the database of face images (query)
+
+### 3. System Information
+
+**Endpoint**: `/system_info`
+
+**Method**: GET
+
+Retrieves information about the system's GPU availability.
+
+### 4. WebSocket for Real-time Video Processing
+
+**Endpoint**: `/ws/video-feed`
+
+**Method**: WebSocket
+
+Allows real-time video processing for object detection. Clients can send video frames and receive detection results in real-time.
+
+For detailed usage of these endpoints, please refer to the API documentation available at `http://localhost:8000/docs` when the server is running.
