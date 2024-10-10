@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 router = APIRouter()
-operation_semaphore = asyncio.Semaphore(2)
+operation_semaphore = asyncio.Semaphore(20)
 
 
 

@@ -10,7 +10,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-SERVER_URL = "ws://localhost:8000/ws/video-feed" # put here the URL of the server
+SERVER_URL = "ws://24.199.95.99:8000/ws/video-feed" # put here the URL of the server
 
 async def send_frame(websocket, frame):
     _, buffer = cv2.imencode('.jpg', frame)
