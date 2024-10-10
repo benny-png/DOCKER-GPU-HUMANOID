@@ -23061,3 +23061,14 @@
     "track_id": 2
   }
 ]
+2024-10-10 08:47:24 - From D:\DOCKER GPU HUMANOID\.venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2024-10-10 08:48:31 - WebSocket connection accepted. Model: yolov10n.pt
+2024-10-10 08:48:31 - GPU is not available. Loading model to CPU.
+2024-10-10 08:58:46 - GPU is not available. Loading model to CPU.
+2024-10-10 09:02:10 - From D:\DOCKER GPU HUMANOID\.venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2024-10-10 09:02:25 - GPU is not available. Loading model to CPU.
+2024-10-10 09:03:33 - GPU is not available. Loading model to CPU.
+2024-10-10 09:06:51 - From D:\DOCKER GPU HUMANOID\.venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+

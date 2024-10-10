@@ -23,6 +23,20 @@ def load_model(model_name: str):
         logging.info("GPU is not available. Loading model to CPU.")
         return ObjectDetectionModel.get_model(model_name)
 
+
+
+def process_image(image):
+    # Convert to RGB if the image has an alpha channel
+    if image.mode == 'RGBA':
+        image = image.convert('RGB')
+    
+    # Convert to numpy array
+    image_np = np.array(image)
+    
+    return image_np
+
+
+
 @router.post("/detect")
 async def detect_objects(
     file: UploadFile = File(...),
@@ -32,7 +46,7 @@ async def detect_objects(
     
     contents = await file.read()
     image = Image.open(io.BytesIO(contents))
-    image_np = np.array(image)
+    image_np = process_image(image)
     
     # If GPU is available, move image to GPU
     if torch.cuda.is_available():
