@@ -1,5 +1,5 @@
 from fastapi import APIRouter, File, UploadFile, Query, Form, HTTPException, Path
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi.responses import JSONResponse, FileResponse, StreamingResponse
 from typing import List
 import os
 import tempfile
@@ -12,8 +12,27 @@ import torch
 import logging
 import shutil
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+# Create file handler which logs even debug messages
+fh = logging.FileHandler('api_log.txt')
+fh.setLevel(logging.INFO)
+
+# Create console handler with a higher log level
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+
+# Create formatter and add it to the handlers
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+fh.setFormatter(formatter)
+ch.setFormatter(formatter)
+
+# Add the handlers to the logger
+logger.addHandler(fh)
+logger.addHandler(ch)
+
+
 
 router = APIRouter()
 operation_semaphore = asyncio.Semaphore(20)
@@ -282,3 +301,18 @@ async def get_system_info():
     except Exception as e:
         logger.error(f"Error getting system info: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error retrieving system information: {str(e)}")
+    
+    
+    
+@router.get("/logs", description="Retrieve API logs")
+async def get_logs():
+    log_file_path = 'api_log.txt'
+    if not os.path.exists(log_file_path):
+        raise HTTPException(status_code=404, detail="Log file not found")
+    
+    def log_generator():
+        with open(log_file_path, 'r') as log_file:
+            for line in log_file:
+                yield line
+
+    return StreamingResponse(log_generator(), media_type="text/plain")
