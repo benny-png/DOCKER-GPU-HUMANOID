@@ -23089,3 +23089,63 @@
 ]
 2024-10-10 09:08:19 - WebSocket connection accepted. Model: yolov10n.pt
 2024-10-10 09:08:19 - GPU is not available. Loading model to CPU.
+2024-10-11 11:48:00 - From D:\DOCKER GPU HUMANOID\.venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2024-10-11 11:48:19 - GPU is not available. Loading model to CPU.
+2024-10-11 11:55:45 - From D:\DOCKER GPU HUMANOID\.venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2024-10-11 11:56:17 - GPU is not available. Loading model to CPU.
+2024-10-11 11:57:25 - From D:\DOCKER GPU HUMANOID\.venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2024-10-11 11:57:37 - GPU is not available. Loading model to CPU.
+2024-10-11 11:58:17 - From D:\DOCKER GPU HUMANOID\.venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2024-10-11 11:58:32 - GPU is not available. Loading model to CPU.
+2024-10-11 11:58:42 - API Response: [
+  {
+    "name": "person",
+    "class": 0,
+    "confidence": 0.9556874632835388,
+    "box": {
+      "x1": 122.166015625,
+      "y1": 585.09716796875,
+      "x2": 1370.02294921875,
+      "y2": 2555.235595703125
+    },
+    "track_id": 1
+  }
+]
+2024-10-11 12:13:51 - From D:\DOCKER GPU HUMANOID\.venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2024-10-11 12:14:13 - Loading model to cpu
+2024-10-11 12:14:15 - API Response: [
+  {
+    "name": "person",
+    "class": 0,
+    "confidence": 0.9556874632835388,
+    "box": {
+      "x1": 122.166015625,
+      "y1": 585.09716796875,
+      "x2": 1370.02294921875,
+      "y2": 2555.235595703125
+    },
+    "track_id": 1
+  }
+]
+2024-10-11 12:34:48 - From D:\DOCKER GPU HUMANOID\.venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2024-10-11 12:35:53 - Loading model to cpu
+2024-10-11 12:35:55 - API Response: [
+  {
+    "name": "person",
+    "class": 0,
+    "confidence": 0.9556874632835388,
+    "box": {
+      "x1": 122.166015625,
+      "y1": 585.09716796875,
+      "x2": 1370.02294921875,
+      "y2": 2555.235595703125
+    },
+    "track_id": 1
+  }
+]

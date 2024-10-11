@@ -16,43 +16,27 @@ logging.basicConfig(filename='api_log.txt', level=logging.INFO,
 router = APIRouter()
 
 def load_model(model_name: str):
-    if torch.cuda.is_available():
-        logging.info("GPU is available. Loading model to GPU.")
-        return ObjectDetectionModel.get_model(model_name).to('cuda')
-    else:
-        logging.info("GPU is not available. Loading model to CPU.")
-        return ObjectDetectionModel.get_model(model_name)
-
-
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    logging.info(f"Loading model to {device}")
+    return ObjectDetectionModel.get_model(model_name), device
 
 def process_image(image):
-    # Convert to RGB if the image has an alpha channel
     if image.mode == 'RGBA':
         image = image.convert('RGB')
-    
-    # Convert to numpy array
-    image_np = np.array(image)
-    
-    return image_np
-
-
+    return np.array(image)
 
 @router.post("/detect")
 async def detect_objects(
     file: UploadFile = File(...),
     model_name: str = Query("yolov10n.pt", description="Name of the YOLO model to use")
 ):
-    model = load_model(model_name)
+    model, device = load_model(model_name)
     
     contents = await file.read()
     image = Image.open(io.BytesIO(contents))
     image_np = process_image(image)
     
-    # If GPU is available, move image to GPU
-    if torch.cuda.is_available():
-        image_np = torch.from_numpy(image_np).to('cuda')
-    
-    results = model.track(image_np, stream=True)
+    results = model.track(image_np, stream=True, device=device)
     result = next(results)
     
     detections = []
@@ -72,7 +56,6 @@ async def detect_objects(
             detection["track_id"] = int(box.id)
         detections.append(detection)
     
-    # Log the response
     logging.info(f"API Response: {json.dumps(detections, indent=2)}")
     
     return JSONResponse(content=detections)
@@ -86,7 +69,7 @@ async def websocket_endpoint(
     logging.info(f"WebSocket connection accepted. Model: {model_name}")
     
     try:
-        model = load_model(model_name)
+        model, device = load_model(model_name)
 
         while True:
             try:
@@ -100,11 +83,7 @@ async def websocket_endpoint(
                     image_np = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
                     logging.debug(f"Image processed. Shape: {image_np.shape}")
 
-                    # If GPU is available, move image to GPU
-                    if torch.cuda.is_available():
-                        image_np = torch.from_numpy(image_np).to('cuda')
-
-                    results = model.track(image_np, stream=True)
+                    results = model.track(image_np, stream=True, device=device)
                     result = next(results)
                     logging.debug("YOLO processing completed")
 
