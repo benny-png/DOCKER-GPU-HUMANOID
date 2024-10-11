@@ -1,5 +1,3 @@
-# SOURCES https://www.youtube.com/watch?v=Hrjp-EStM_s https://pypi.org/project/deepface/
-
 from fastapi import APIRouter, File, UploadFile, Query, Form, HTTPException, Path
 from fastapi.responses import JSONResponse, FileResponse
 from typing import List
@@ -14,15 +12,20 @@ import torch
 import logging
 import shutil
 
-
-
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
-
-
 
 router = APIRouter()
 operation_semaphore = asyncio.Semaphore(20)
+
+class FaceRecognitionError(Exception):
+    pass
+
+class DatabaseError(Exception):
+    pass
+
+class ImageProcessingError(Exception):
+    pass
 
 
 
@@ -36,8 +39,11 @@ def run_face_recognition(img_path, db_path, model_name, detector_backend):
             detector_backend=detector_backend
         )
     except Exception as e:
-        logger.error(f"Error in face recognition: {str(e)}")
-        raise
+        logger.error(f"Error in face recognition: {str(e)}", exc_info=True)
+        raise FaceRecognitionError(f"Face recognition failed: {str(e)}")
+
+
+
 
 async def async_run_face_recognition(img_path, db_path, model_name, detector_backend):
     async with operation_semaphore:
@@ -47,10 +53,12 @@ async def async_run_face_recognition(img_path, db_path, model_name, detector_bac
                 None, 
                 functools.partial(run_face_recognition, img_path, db_path, model_name, detector_backend)
             )
-        except Exception as e:
+        except FaceRecognitionError as e:
             logger.error(f"Error in async face recognition: {str(e)}")
             raise
-
+        except Exception as e:
+            logger.error(f"Unexpected error in async face recognition: {str(e)}", exc_info=True)
+            raise FaceRecognitionError(f"Unexpected error in face recognition: {str(e)}")
 
 
 
@@ -87,13 +95,16 @@ async def find_faces(
     
     except FileNotFoundError:
         logger.error(f"Database path not found: {db_path}")
-        raise HTTPException(status_code=404, detail="Database path not found")
+        raise HTTPException(status_code=404, detail=f"Database path not found: {db_path}")
     except ValueError as ve:
         logger.error(f"Invalid input: {str(ve)}")
-        raise HTTPException(status_code=400, detail=str(ve))
+        raise HTTPException(status_code=400, detail=f"Invalid input: {str(ve)}")
+    except FaceRecognitionError as fre:
+        logger.error(f"Face recognition error: {str(fre)}")
+        raise HTTPException(status_code=500, detail=str(fre))
     except Exception as e:
-        logger.error(f"Unexpected error in find_faces: {str(e)}")
-        raise HTTPException(status_code=500, detail="An unexpected error occurred")
+        logger.error(f"Unexpected error in find_faces: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
     finally:
         if temp_file_path and os.path.exists(temp_file_path):
             os.unlink(temp_file_path)
@@ -117,13 +128,14 @@ async def add_face(
         return JSONResponse(content={"message": f"Face added for {person_name}", "file_path": file_path})
     except FileNotFoundError:
         logger.error(f"Database path not found: {db_path}")
-        raise HTTPException(status_code=404, detail="Database path not found")
+        raise HTTPException(status_code=404, detail=f"Database path not found: {db_path}")
     except PermissionError:
         logger.error(f"Permission denied when writing to {db_path}")
-        raise HTTPException(status_code=403, detail="Permission denied when writing to database")
+        raise HTTPException(status_code=403, detail=f"Permission denied when writing to database: {db_path}")
     except Exception as e:
-        logger.error(f"Unexpected error in add_face: {str(e)}")
-        raise HTTPException(status_code=500, detail="An unexpected error occurred")
+        logger.error(f"Unexpected error in add_face: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+
 
 
 
@@ -134,10 +146,11 @@ async def list_people(db_path: str = Query(..., description="Path to the databas
         people = [name for name in os.listdir(db_path) if os.path.isdir(os.path.join(db_path, name))]
         return people
     except FileNotFoundError:
-        raise HTTPException(status_code=404, detail="Database path not found")
+        logger.error(f"Database path not found: {db_path}")
+        raise HTTPException(status_code=404, detail=f"Database path not found: {db_path}")
     except Exception as e:
-        logger.error(f"Error listing people: {str(e)}")
-        raise HTTPException(status_code=500, detail="An error occurred while listing people")
+        logger.error(f"Error listing people: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"An error occurred while listing people: {str(e)}")
 
 
 
@@ -150,15 +163,15 @@ async def get_person_images(
     person_dir = os.path.join(db_path, person_name)
     try:
         if not os.path.isdir(person_dir):
-            raise HTTPException(status_code=404, detail=f"Person '{person_name}' not found")
+            raise FileNotFoundError(f"Person '{person_name}' not found")
         images = [f for f in os.listdir(person_dir) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
         return images
-    except HTTPException:
-        raise
+    except FileNotFoundError as e:
+        logger.error(str(e))
+        raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        logger.error(f"Error getting images for {person_name}: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"An error occurred while retrieving images for {person_name}")
-
+        logger.error(f"Error getting images for {person_name}: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"An error occurred while retrieving images for {person_name}: {str(e)}")
 
 
 
@@ -170,7 +183,8 @@ async def get_image(
 ):
     image_path = os.path.join(db_path, person_name, image_name)
     if not os.path.isfile(image_path):
-        raise HTTPException(status_code=404, detail="Image not found")
+        logger.error(f"Image not found: {image_path}")
+        raise HTTPException(status_code=404, detail=f"Image not found: {image_name}")
     return FileResponse(image_path)
 
 
@@ -186,16 +200,21 @@ async def update_person_name(
     new_path = os.path.join(db_path, new_name)
     try:
         if not os.path.isdir(old_path):
-            raise HTTPException(status_code=404, detail=f"Person '{old_name}' not found")
+            raise FileNotFoundError(f"Person '{old_name}' not found")
         if os.path.exists(new_path):
-            raise HTTPException(status_code=400, detail=f"Person '{new_name}' already exists")
+            raise ValueError(f"Person '{new_name}' already exists")
         os.rename(old_path, new_path)
         return JSONResponse(content={"message": f"Successfully renamed '{old_name}' to '{new_name}'"})
-    except HTTPException:
-        raise
+    except FileNotFoundError as e:
+        logger.error(str(e))
+        raise HTTPException(status_code=404, detail=str(e))
+    except ValueError as e:
+        logger.error(str(e))
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error(f"Error updating person name from {old_name} to {new_name}: {str(e)}")
-        raise HTTPException(status_code=500, detail="An error occurred while updating the person's name")
+        logger.error(f"Error updating person name from {old_name} to {new_name}: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"An error occurred while updating the person's name: {str(e)}")
+
 
 
 
@@ -208,14 +227,16 @@ async def delete_person(
     person_dir = os.path.join(db_path, person_name)
     try:
         if not os.path.isdir(person_dir):
-            raise HTTPException(status_code=404, detail=f"Person '{person_name}' not found")
+            raise FileNotFoundError(f"Person '{person_name}' not found")
         shutil.rmtree(person_dir)
         return JSONResponse(content={"message": f"Successfully deleted '{person_name}' and all associated images"})
-    except HTTPException:
-        raise
+    except FileNotFoundError as e:
+        logger.error(str(e))
+        raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        logger.error(f"Error deleting person {person_name}: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"An error occurred while deleting {person_name}")
+        logger.error(f"Error deleting person {person_name}: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"An error occurred while deleting {person_name}: {str(e)}")
+
 
 
 
@@ -229,14 +250,15 @@ async def delete_image(
     image_path = os.path.join(db_path, person_name, image_name)
     try:
         if not os.path.isfile(image_path):
-            raise HTTPException(status_code=404, detail="Image not found")
+            raise FileNotFoundError("Image not found")
         os.remove(image_path)
         return JSONResponse(content={"message": f"Successfully deleted image '{image_name}' for '{person_name}'"})
-    except HTTPException:
-        raise
+    except FileNotFoundError as e:
+        logger.error(str(e))
+        raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        logger.error(f"Error deleting image {image_name} for {person_name}: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"An error occurred while deleting the image")
+        logger.error(f"Error deleting image {image_name} for {person_name}: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"An error occurred while deleting the image: {str(e)}")
 
 
 
@@ -258,5 +280,5 @@ async def get_system_info():
             "device_count": device_count
         })
     except Exception as e:
-        logger.error(f"Error getting system info: {str(e)}")
-        raise HTTPException(status_code=500, detail="Error retrieving system information")
+        logger.error(f"Error getting system info: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Error retrieving system information: {str(e)}")
