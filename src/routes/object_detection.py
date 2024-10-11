@@ -16,7 +16,7 @@ logging.basicConfig(filename='api_log.txt', level=logging.INFO,
 router = APIRouter()
 
 def load_model(model_name: str):
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     logging.info(f"Loading model to {device}")
     return ObjectDetectionModel.get_model(model_name), device
 
