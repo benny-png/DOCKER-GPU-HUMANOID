@@ -23183,3 +23183,22 @@
     "track_id": 1
   }
 ]
+2024-10-11 13:31:34 - WARNING - From D:\DOCKER GPU HUMANOID\.venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2024-10-11 13:33:23 - INFO - Loading model yolov10n.pt to cpu
+2024-10-11 13:33:25 - INFO - API Response: [
+  {
+    "name": "person",
+    "class": 0,
+    "confidence": 0.9556874632835388,
+    "box": {
+      "x1": 122.166015625,
+      "y1": 585.09716796875,
+      "x2": 1370.02294921875,
+      "y2": 2555.235595703125
+    },
+    "track_id": 1
+  }
+]
+2024-10-11 15:47:54 - WARNING - From D:\DOCKER GPU HUMANOID\.venv\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
